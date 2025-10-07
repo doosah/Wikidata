@@ -1,15 +1,12 @@
-# app.py  (ссылки и кнопка «Показать ещё» работают)
+import os
 import json
 from flask import Flask, render_template, request, jsonify, session
-import spacy
-from utils.wikidata_helpers import find_and_describe
+from utils.wikidata_helpers import find_and_describe   # наша старая функция
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key_123"
 
 LANGUAGES = {"ru": "Русский", "en": "English", "zh": "中文"}
-nlp_ru = spacy.load("ru_core_news_sm")
-nlp_en = spacy.load("en_core_web_sm")
 
 @app.route("/")
 def index():
@@ -32,9 +29,8 @@ def ask():
     if not question:
         return jsonify({"answer": "Пожалуйста, введите вопрос."})
 
-    nlp   = nlp_ru if lang == "ru" else nlp_en
-    doc   = nlp(question)
-    query = next((ent.text for ent in doc.ents if ent.label_ in {"PER", "ORG", "LOC"}), question)
+    # простой поиск: берём всю фразу
+    query = question
     found = find_and_describe(query, lang)
 
     if not found:
@@ -70,8 +66,3 @@ def more():
 
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)
-# для хостинга
-if __name__ != "__main__":
-    import spacy
-    nlp_ru = spacy.load("ru_core_news_sm")
-    nlp_en = spacy.load("en_core_web_sm")
